@@ -1,20 +1,41 @@
 #!/usr/bin/env bash
 # bds-tool を ~/.local/bin に入れ、bash の Tab 補完を登録する。
-#   ./install.sh              このスクリプトの隣、または target/release/ の bds-tool を入れる
+#   ./install.sh              このスクリプトの隣、または target/release/ の bds-tool を入れる。
+#                             無ければ、最新のリリースをダウンロードして入れる
 #   ./install.sh <bds-tool>   指定した実行ファイルを入れる
 # 何度実行してもよい(実行ファイルと補完を上書きする)。
 set -euo pipefail
 
-here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo="takumin287877/bds-tool"
 src="${1:-}"
-if [ -z "$src" ]; then
+
+# 手元の実行ファイルを探す(`curl ... | bash` で実行したときは探さない)
+if [ -z "$src" ] && [ -f "${BASH_SOURCE[0]:-}" ]; then
+  here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   for c in "$here/bds-tool" "$here/target/release/bds-tool"; do
     if [ -x "$c" ]; then src="$c"; break; fi
   done
 fi
-if [ -z "$src" ] || [ ! -x "$src" ]; then
-  echo "エラー: bds-tool の実行ファイルが見つかりません。" >&2
-  echo "  cargo build --release を実行してから、もう一度実行するか、パスを指定してください: ./install.sh <bds-tool>" >&2
+
+# 無ければ、最新のリリースをダウンロードする
+if [ -z "$src" ]; then
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "エラー: curl がありません。curl を入れるか、cargo build --release してから ./install.sh を実行してください" >&2
+    exit 1
+  fi
+  echo "手元に bds-tool が無いので、最新のリリースをダウンロードします"
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  base="https://github.com/$repo/releases/latest/download"
+  curl -fsSL -o "$tmp/bds-tool" "$base/bds-tool" || { echo "エラー: ダウンロードに失敗しました: $base/bds-tool" >&2; exit 1; }
+  curl -fsSL -o "$tmp/bds-tool.sha256" "$base/bds-tool.sha256" || { echo "エラー: チェックサムを取得できません" >&2; exit 1; }
+  (cd "$tmp" && sha256sum -c bds-tool.sha256 >/dev/null) || { echo "エラー: チェックサムが一致しません" >&2; exit 1; }
+  chmod +x "$tmp/bds-tool"
+  src="$tmp/bds-tool"
+fi
+
+if [ ! -x "$src" ]; then
+  echo "エラー: $src が見つからないか、実行できません" >&2
   exit 1
 fi
 if ! "$src" --version >/dev/null 2>&1; then

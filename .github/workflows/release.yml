@@ -1,0 +1,42 @@
+name: release
+
+# v で始まるタグを push すると、バイナリをビルドして GitHub Releases に載せる
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: musl ツールチェーンを入れる(どの Linux でも動く単体バイナリにするため)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+          rustup target add x86_64-unknown-linux-musl
+
+      - name: テスト
+        run: cargo test --locked
+
+      - name: ビルド
+        run: cargo build --release --locked --target x86_64-unknown-linux-musl
+
+      - name: 成果物を用意する
+        run: |
+          mkdir dist
+          cp target/x86_64-unknown-linux-musl/release/bds-tool dist/bds-tool
+          cp install.sh dist/install.sh
+          ./dist/bds-tool --version
+          cd dist && sha256sum bds-tool > bds-tool.sha256
+
+      - name: リリースを作る
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/bds-tool dist/bds-tool.sha256 dist/install.sh \
+            --title "$GITHUB_REF_NAME" --generate-notes

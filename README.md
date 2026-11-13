@@ -3,14 +3,21 @@
 公式 Bedrock Dedicated Server (Linux) を、新規インストール・更新するツール。
 
 ## 1. ツールを入れる(1回だけ)
+Linux (x86_64) の bash で、次を実行します。最新のリリースをダウンロードして、`~/.local/bin/bds-tool` に入れ、Tab 補完も登録します。
 ```bash
-cargo build --release     # Rust が必要
-./install.sh              # ~/.local/bin/bds-tool に入れ、bash の Tab 補完も登録する
+curl -fsSL https://github.com/takumin287877/bds-tool/releases/latest/download/install.sh | bash
 ```
-- `install.sh` は、ツールを入れるときだけ使います。何度実行しても構いません(上書きします)。
-- 実行ファイルだけを持っているときは、`./install.sh /path/to/bds-tool` で入れられます。
+- ダウンロードしたバイナリは、チェックサム(SHA-256)を確認してから入れます。
 - `~/.local/bin` が PATH に無いときは、案内が出ます。
-- `bds-tool` 自体は、ホームのファイルを書き換えません。
+- `bds-tool` 自体は、ホームのファイルを書き換えません。書き換えるのは `install.sh` だけで、何度実行しても構いません(上書きします)。
+
+ソースからビルドする場合(Rust が必要):
+```bash
+git clone https://github.com/takumin287877/bds-tool && cd bds-tool
+cargo build --release
+./install.sh        # target/release/bds-tool を入れる
+```
+実行ファイルだけを持っているときは、`./install.sh /path/to/bds-tool` で入れられます。
 
 ## 2. サーバーを入れる
 ```bash
