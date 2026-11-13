@@ -12,6 +12,7 @@ use std::fs;
 const EXAMPLES: &str = "\
 使用例:
   bds-tool install ~/server             サーバーを新規インストール(--run で起動まで)
+  bds-tool run ~/server                 サーバーを起動(更新はしない)
   bds-tool status ~/server              版・状態・ポートを表示するだけ
   bds-tool update ~/server              更新だけ
   bds-tool update ~/server --run        更新してからサーバーを起動
@@ -47,6 +48,12 @@ enum Cmd {
         #[arg(short, long)]
         run: bool,
     },
+    /// サーバーを起動する(更新はしない)
+    Run {
+        /// サーバーのディレクトリ(省略時はカレント)
+        #[arg(default_value = ".", value_hint = ValueHint::DirPath)]
+        path: PathBuf,
+    },
     /// サーバーを新規インストールする(最新版を指定ディレクトリに展開)
     Install {
         /// インストール先のディレクトリ(省略時はカレント)
@@ -76,6 +83,28 @@ fn completion_script(shell: Shell) -> String {
 fn completions_cmd(shell: Shell) -> ! {
     print!("{}", completion_script(shell));
     std::process::exit(0) // スクリプトの末尾に空行を足さない
+}
+
+/// 更新せずにサーバーを起動する(このプロセスを bedrock_server に置き換える)。
+fn run_cmd(dir: &Path) -> Result<()> {
+    if !dir.join("bedrock_server").is_file() {
+        bail!(
+            "{} に bedrock_server がありません。新規インストールは `bds-tool install {}` を使ってください",
+            dir.display(),
+            dir.display()
+        );
+    }
+    if service::is_running() {
+        bail!("bedrock_server が既に起動中です。起動中のサーバーを止めるには、そのサーバーで `stop` と入力してください");
+    }
+    let port = fs::read_to_string(dir.join("server.properties"))
+        .ok()
+        .and_then(|s| status::parse_port(&s))
+        .map_or("不明".to_string(), |p| p.to_string());
+    let here = dir.canonicalize().unwrap_or_else(|_| dir.to_path_buf());
+    println!("サーバー: {}   ポート: {port}", here.display());
+    println!("→ サーバーを起動します(止めるときは、この画面で `stop` と入力)");
+    Err(service::exec_server(dir))
 }
 
 /// サーバーを新規インストールする。run が true なら、そのまま起動する。
@@ -122,6 +151,7 @@ fn real_main() -> Result<()> {
             Ok(())
         }
         Cmd::Update { path, force, run } => update_cmd(&path, force, run),
+        Cmd::Run { path } => run_cmd(&path),
         Cmd::Install { path, run } => install_server_cmd(&path, run),
         Cmd::Completions { shell } => completions_cmd(shell),
     }

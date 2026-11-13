@@ -11,6 +11,7 @@ curl -fsSL https://github.com/takumin287877/bds-tool/releases/latest/download/in
 ```bash
 bds-tool install ~/mcserver --run    # サーバーを新規インストールして起動
 bds-tool update ~/mcserver --run     # (サーバーを stop したあとで)更新して起動
+bds-tool run ~/mcserver              # 更新せずに起動だけ
 ```
 
 ## 1. ツールを入れる(1回だけ)
@@ -43,6 +44,7 @@ bds-tool install ~/mcserver --run    # インストールして、そのまま�
 bds-tool update [PATH]          # 更新だけ
 bds-tool update [PATH] --run    # 更新してからサーバーを起動 (-r)
 bds-tool update [PATH] --force  # 同じ版でも再適用
+bds-tool run [PATH]             # 更新せずにサーバーを起動
 bds-tool status [PATH]          # 版・起動状態・ポートを表示するだけ
 ```
 - `PATH` はサーバーのディレクトリ(省略するとカレント)。`bedrock_server` が無い場所では `update` は止まります。
