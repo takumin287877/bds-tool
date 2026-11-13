@@ -2,6 +2,17 @@
 
 公式 Bedrock Dedicated Server (Linux) を、新規インストール・更新するツール。
 
+## クイックスタート
+Linux (x86_64) の bash で、次の1行を実行すると、ツールが入ります。
+```bash
+curl -fsSL https://github.com/takumin287877/bds-tool/releases/latest/download/install.sh | bash
+```
+そのあと、新しく開いたシェルで次のように使います。
+```bash
+bds-tool install ~/mcserver --run    # サーバーを新規インストールして起動
+bds-tool update ~/mcserver --run     # (サーバーを stop したあとで)更新して起動
+```
+
 ## 1. ツールを入れる(1回だけ)
 Linux (x86_64) の bash で、次を実行します。最新のリリースをダウンロードして、`~/.local/bin/bds-tool` に入れ、Tab 補完も登録します。
 ```bash
@@ -41,3 +52,6 @@ bds-tool status [PATH]          # 版・起動状態・ポートを表示する�
 
 ## Tab 補完
 `bds-tool up<Tab>` → `update`、`--<Tab>` → `--run` / `--force`、パスはディレクトリ名を補完します。補完スクリプトは `bds-tool completions bash` で出力できます(zsh / fish も可)。
+
+## ライセンス
+[MIT](LICENSE)

@@ -2,6 +2,9 @@
 name = "bds-tool"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+description = "Minecraft 統合版 (Bedrock Dedicated Server) の新規インストール・更新ツール"
+repository = "https://github.com/takumin287877/bds-tool"
 
 [dependencies]
 anyhow = "1.0.104"
