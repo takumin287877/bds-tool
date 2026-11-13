@@ -23,7 +23,7 @@ if [ -z "$src" ]; then
     echo "エラー: curl がありません。curl を入れるか、cargo build --release してから ./install.sh を実行してください" >&2
     exit 1
   fi
-  echo "最新のリリースをダウンロードします"
+  echo "ダウンロードしています"
   tmp="$(mktemp -d)"
   trap 'rm -rf "$tmp"' EXIT
   base="https://github.com/$repo/releases/latest/download"
